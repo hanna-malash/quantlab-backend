@@ -94,15 +94,21 @@ uv add --dev <package>
 
 ## Running the project
 
-FastAPI entrypoint will be added in a separate feature PR.
-
-When available, the API will be started with:
+### Start the API server
 
 ```bash
 uv run uvicorn app.main:app --reload
 ```
 
-Swagger UI: http://127.0.0.1:8000/docs
+Swagger UI docs: http://127.0.0.1:8000/docs
+
+### Health check
+
+```bash
+curl http://127.0.0.1:8000/api/v1/health
+```
+
+Or open in browser: http://127.0.0.1:8000/api/v1/health
 
 ## Code quality
 
