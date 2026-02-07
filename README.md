@@ -1,5 +1,7 @@
 # QuantLab Backend
 
+![CI](https://github.com/hanna-malash/QuantLab/actions/workflows/ci.yml/badge.svg)
+
 Backend service for **QuantLab** — a finance-focused analytics platform for crypto, stocks and portfolio analytics.
 
 The goal of this backend is to provide:
