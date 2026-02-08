@@ -15,3 +15,9 @@ Thumbs.db
 
 # pytest cache
 .pytest_cache/
+
+# Data (do not commit large datasets)
+data/raw/*
+data/normalized/*
+!data/raw/.gitkeep
+!data/normalized/.gitkeep

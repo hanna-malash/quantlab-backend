@@ -112,6 +112,23 @@ curl http://127.0.0.1:8000/api/v1/health
 
 Or open in browser: http://127.0.0.1:8000/api/v1/health
 
+### Data ingestion (download once, work locally)
+
+We do not commit large datasets into the repository. Put raw files into `data/raw/` and keep normalized outputs in `data/normalized/`.
+
+#### Normalize a local raw CSV
+
+1. Download a raw OHLCV CSV (example: CryptoDataDownload) and put it into `data/raw/`.
+2. Run ingestion (PowerShell):
+
+```powershell
+uv run python -m app.scripts.ingest --source cryptodatadownload --exchange binance --symbol BTCUSDT --timeframe 1h --raw-file data/raw/BTCUSDT_1h.csv
+```
+
+Output is saved into `data/normalized/` as a normalized CSV with columns:
+
+symbol, timestamp_utc, open, high, low, close, volume, source, timeframe
+
 ## Code quality
 
 ### Ruff – lint
