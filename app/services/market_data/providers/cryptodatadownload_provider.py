@@ -1,8 +1,8 @@
 import csv
+from collections.abc import Iterable
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Iterable, List, Optional
 from urllib.request import urlopen
 
 from app.schemas.market_data import OhlcvBar
@@ -18,11 +18,11 @@ class CryptoDataDownloadSource:
 class CryptoDataDownloadProvider:
     SOURCE_NAME = "cryptodatadownload"
 
-    def load_raw_csv_from_file(self, path: Path) -> List[dict]:
+    def load_raw_csv_from_file(self, path: Path) -> list[dict]:
         with path.open("r", encoding="utf-8", newline="") as f:
             return list(csv.DictReader(f))
 
-    def load_raw_csv_from_url(self, url: str) -> List[dict]:
+    def load_raw_csv_from_url(self, url: str) -> list[dict]:
         with urlopen(url) as resp:
             content_bytes = resp.read()
         text = content_bytes.decode("utf-8", errors="replace")
@@ -34,12 +34,9 @@ class CryptoDataDownloadProvider:
         self,
         raw_rows: Iterable[dict],
         src: CryptoDataDownloadSource,
-    ) -> List[OhlcvBar]:
-        bars: List[OhlcvBar] = []
+    ) -> list[OhlcvBar]:
+        bars: list[OhlcvBar] = []
         for row in raw_rows:
-            # CryptoDataDownload CSV usually has columns like:
-            # date, open, high, low, close, Volume BTC, Volume USDT, tradecount
-            # Date can be "2024-01-01 00:00:00" or similar. We'll treat it as UTC.
             date_str = (row.get("date") or row.get("Date") or "").strip()
             if date_str == "":
                 continue
@@ -50,8 +47,10 @@ class CryptoDataDownloadProvider:
             low_v = self._parse_float(row, ["low", "Low"])
             close_v = self._parse_float(row, ["close", "Close"])
 
-            # Choose a volume column that exists, prefer quote volume if present, otherwise base volume.
-            volume_v = self._parse_float_optional(row, ["Volume USDT", "Volume USD", "volume", "Volume"])
+            # Prefer quote volume if present, otherwise base volume.
+            volume_v = self._parse_float_optional(
+                row, ["Volume USDT", "Volume USD", "volume", "Volume"]
+            )
             if volume_v is None:
                 volume_v = self._parse_float_optional(row, ["Volume BTC", "Volume ETH"])
             if volume_v is None:
@@ -73,24 +72,22 @@ class CryptoDataDownloadProvider:
         return bars
 
     def _parse_datetime_utc(self, value: str) -> datetime:
-        # Support: "YYYY-MM-DD HH:MM:SS" and "YYYY-MM-DD"
         value = value.strip()
         for fmt in ["%Y-%m-%d %H:%M:%S", "%Y-%m-%d"]:
             try:
                 dt = datetime.strptime(value, fmt)
-                return dt.replace(tzinfo=timezone.utc)
+                return dt.replace(tzinfo=UTC)
             except ValueError:
                 continue
-        # If parsing fails, raise to catch bad inputs early.
         raise ValueError(f"Unsupported datetime format: {value}")
 
-    def _parse_float(self, row: dict, keys: List[str]) -> float:
+    def _parse_float(self, row: dict, keys: list[str]) -> float:
         v = self._parse_float_optional(row, keys)
         if v is None:
             raise ValueError(f"Missing numeric value for keys: {keys}")
         return v
 
-    def _parse_float_optional(self, row: dict, keys: List[str]) -> Optional[float]:
+    def _parse_float_optional(self, row: dict, keys: list[str]) -> float | None:
         for k in keys:
             raw = row.get(k)
             if raw is None:

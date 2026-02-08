@@ -1,6 +1,6 @@
 import csv
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 from app.schemas.market_data import OhlcvBar
 
@@ -15,7 +15,17 @@ class MarketDataRepository:
         with output_path.open("w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow(
-                ["symbol", "timestamp_utc", "open", "high", "low", "close", "volume", "source", "timeframe"]
+                [
+                    "symbol",
+                    "timestamp_utc",
+                    "open",
+                    "high",
+                    "low",
+                    "close",
+                    "volume",
+                    "source",
+                    "timeframe",
+                ]
             )
             for bar in bars:
                 writer.writerow(
