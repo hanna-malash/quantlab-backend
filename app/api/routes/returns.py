@@ -7,7 +7,7 @@ from app.core.settings import get_normalized_data_dir
 from app.domain.analytics.returns import log_returns, simple_returns
 from app.services.market_data.reader import NormalizedCsvReader
 
-router = APIRouter(prefix="/api/v1")
+router = APIRouter()
 
 
 class ReturnPointOut(BaseModel):

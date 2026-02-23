@@ -5,7 +5,7 @@ from app.api.routes.prices import router as prices_router
 from app.api.routes.returns import router as returns_router
 from app.api.routes.volatility import router as volatility_router
 
-router = APIRouter()
+router = APIRouter(prefix="/api/v1")
 router.include_router(health_router)
 router.include_router(prices_router)
 router.include_router(returns_router)
