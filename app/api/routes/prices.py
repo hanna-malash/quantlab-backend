@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from app.core.settings import get_normalized_data_dir
 from app.services.market_data.reader import NormalizedCsvReader
 
-router = APIRouter(prefix="/api/v1")
+router = APIRouter()
 
 
 class PricePointOut(BaseModel):
@@ -28,4 +28,5 @@ def get_prices(
             status_code=404,
             detail=f"Normalized data not found for {symbol} {timeframe}",
         ) from None
+
     return [{"timestamp_utc": p.timestamp_utc, "close": p.close} for p in points]

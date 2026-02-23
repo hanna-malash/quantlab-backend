@@ -8,7 +8,7 @@ from app.domain.analytics.returns import log_returns
 from app.domain.analytics.volatility import rolling_std
 from app.services.market_data.reader import NormalizedCsvReader
 
-router = APIRouter(prefix="/api/v1")
+router = APIRouter()
 
 
 class VolPointOut(BaseModel):
