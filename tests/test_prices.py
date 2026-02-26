@@ -25,6 +25,7 @@ def test_prices_endpoint_reads_normalized_csv(tmp_path: Path) -> None:
     assert resp.status_code == 200
 
     data = resp.json()
-    assert len(data) == 2
-    assert data[0]["timestamp_utc"].startswith("2024-01-01T00:00:00")
-    assert data[0]["close"] == 42050.0
+    assert data["symbol"] == "BTCUSDT"
+    assert len(data["points"]) == 2
+    assert data["points"][0]["timestamp_utc"].startswith("2024-01-01T00:00:00")
+    assert data["points"][0]["close"] == 42050.0
