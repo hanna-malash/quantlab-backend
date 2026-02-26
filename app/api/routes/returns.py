@@ -22,13 +22,19 @@ def get_returns(
     type: str = Query(default="log", pattern="^(log|simple)$"),
     limit: int = Query(default=500, ge=2, le=5000),
 ):
+    normalized_symbol = symbol.strip().upper()
+
     reader = NormalizedCsvReader(normalized_dir=get_normalized_data_dir())
     try:
-        points = reader.read_close_series(symbol=symbol, timeframe=timeframe, limit=limit)
+        points = reader.read_close_series(
+            symbol=normalized_symbol,
+            timeframe=timeframe,
+            limit=limit,
+        )
     except FileNotFoundError:
         raise HTTPException(
             status_code=404,
-            detail=f"Normalized data not found for {symbol} {timeframe}",
+            detail=f"Normalized data not found for {normalized_symbol} {timeframe}",
         ) from None
 
     close_points = [(p.timestamp_utc, p.close) for p in points]
