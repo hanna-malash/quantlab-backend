@@ -19,5 +19,10 @@ Thumbs.db
 # Data (do not commit large datasets)
 data/raw/*
 data/normalized/*
+
+# keep folder structure
 !data/raw/.gitkeep
 !data/normalized/.gitkeep
+
+# allow demo dataset (used by API + frontend out-of-the-box)
+!data/normalized/BTCUSDT_1h.csv
