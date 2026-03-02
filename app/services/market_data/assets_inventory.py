@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-from typing import Dict, List
 
 
 def _get_normalized_data_dir() -> Path:
@@ -10,9 +9,9 @@ def _get_normalized_data_dir() -> Path:
     return Path("data") / "normalized"
 
 
-def build_assets_inventory() -> List[Dict[str, object]]:
+def build_assets_inventory() -> list[dict[str, object]]:
     normalized_dir = _get_normalized_data_dir()
-    inventory: Dict[str, List[str]] = {}
+    inventory: dict[str, list[str]] = {}
 
     if not normalized_dir.exists() or not normalized_dir.is_dir():
         return []
@@ -40,7 +39,7 @@ def build_assets_inventory() -> List[Dict[str, object]]:
             inventory[symbol].append(timeframe)
 
     # Stable output: sort symbols and timeframes
-    assets: List[Dict[str, object]] = []
+    assets: list[dict[str, object]] = []
     for symbol in sorted(inventory.keys()):
         timeframes = sorted(inventory[symbol])
         assets.append(
