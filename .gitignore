@@ -16,7 +16,7 @@ Thumbs.db
 # pytest cache
 .pytest_cache/
 
-# Data (do not commit large datasets)
+# Data (do not commit large datasets by default)
 data/raw/*
 data/normalized/*
 
@@ -26,3 +26,10 @@ data/normalized/*
 
 # allow demo dataset (used by API + frontend out-of-the-box)
 !data/normalized/BTCUSDT_1h.csv
+
+# allow Stooq daily raw datasets (history)
+!data/raw/*_d.csv
+!data/raw/*_us_d.csv
+
+# allow normalized daily datasets (history)
+!data/normalized/*_1d.csv
