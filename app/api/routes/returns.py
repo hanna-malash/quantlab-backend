@@ -1,21 +1,14 @@
-from datetime import datetime
-
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel
 
 from app.core.settings import get_normalized_data_dir
 from app.domain.analytics.returns import log_returns, simple_returns
+from app.schemas.series import SeriesOut
 from app.services.market_data.reader import NormalizedCsvReader
 
 router = APIRouter()
 
 
-class ReturnPointOut(BaseModel):
-    timestamp_utc: datetime
-    value: float
-
-
-@router.get("/assets/{symbol}/returns", response_model=list[ReturnPointOut])
+@router.get("/assets/{symbol}/returns", response_model=SeriesOut)
 def get_returns(
     symbol: str,
     timeframe: str = Query(default="1h", min_length=1),
@@ -43,4 +36,7 @@ def get_returns(
     else:
         ret_points = log_returns(close_points)
 
-    return [{"timestamp_utc": r.timestamp_utc, "value": r.value} for r in ret_points]
+    return {
+        "symbol": normalized_symbol,
+        "points": [{"timestamp_utc": r.timestamp_utc, "value": r.value} for r in ret_points],
+    }
