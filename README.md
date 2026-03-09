@@ -2,283 +2,141 @@
 
 ![CI](https://github.com/hanna-malash/QuantLab/actions/workflows/ci.yml/badge.svg)
 
-Backend service for **QuantLab** — a finance-focused analytics platform for crypto, stocks and portfolio analytics.
+FastAPI backend for market data analytics. The service exposes HTTP endpoints for price series, returns, volatility, drawdown, and asset discovery based on normalized CSV data.
 
-The goal of this backend is to provide:
+## Stack
 
-- a clean FastAPI-based HTTP API
-- a well-separated computation core (returns, volatility, VaR/CVaR, portfolio metrics)
-- strict engineering discipline (small PRs, tests, formatting, documentation)
-
-This repository is intentionally structured to separate:
-
-- API layer (FastAPI)
-- domain logic (pure math / finance)
-- integrations (external data sources, DB later)
-- tests
-
-Every feature is developed in its own branch and merged via Pull Request.
-
----
-
-## Tech stack
-
-- Python 3.13
-- FastAPI (API layer – coming in next features)
-- uv (dependency management + command runner)
-- ruff (lint + formatter)
-- pytest (tests)
-- pre-commit (pre-commit + pre-push hooks)
-
----
-
-## Repository structure (high level)
-
-```
-app/
-├── api/              # HTTP routes (FastAPI)
-├── core/             # config, shared helpers
-├── domain/           # pure finance / math logic (no FastAPI, no DB)
-├── services/         # integrations (market data providers, later DB)
-├── schemas/          # Pydantic models
-└── db/               # database layer (future)
-tests/
-docs/
-```
-
-Key idea:
-
-- `domain/` contains only calculations
-- `api/` is just a thin HTTP layer
-- `services/` talk to the outside world
-- `tests/` verify everything
-
----
-
-## Requirements
-
-- Python 3.13
+- Python 3.13+
+- FastAPI
 - uv
+- ruff
+- pytest
+- pre-commit
 
----
+## Project layout
 
-## Install uv
+```text
+app/
+├── api/                    # FastAPI routes and router wiring
+├── core/                   # shared settings
+├── domain/analytics/       # pure calculation logic
+├── schemas/                # response models
+├── scripts/                # data normalization / ingestion
+└── services/market_data/   # CSV readers, repository, providers
 
-### macOS
+data/
+├── raw/                    # source files before normalization
+└── normalized/             # API-ready OHLCV files
+
+tests/                      # API and domain tests
+```
+
+The separation is intentional:
+
+- `app/domain/analytics` contains math only
+- `app/api` stays thin and delegates to services/domain logic
+- `app/services/market_data` handles file access and provider-specific normalization
+
+## Setup
+
+Install dependencies from the repository root:
+
+```bash
+uv sync
+```
+
+If `uv` is not installed yet:
 
 ```bash
 brew install uv
-uv --version
 ```
 
-### Windows (inside virtual environment)
-
-If `winget` does not work, install via pip:
-
-```bash
-python -m ensurepip --upgrade
-python -m pip install -U uv
-python -m uv --version
-```
-
-## Setup dependencies
-
-From repository root:
-
-```
-
-If you add packages later:
-
-```bash
-uv add <package>
-uv add --dev <package>
-```
-
-## Running the project
-
-### Start the API server
+## Run the API
 
 ```bash
 uv run uvicorn app.main:app --reload
 ```
 
-Swagger UI docs: http://127.0.0.1:8000/docs
+Open:
 
-### Health check
+- `http://127.0.0.1:8000/docs`
+- `http://127.0.0.1:8000/api/v1/health`
 
-```bash
-curl http://127.0.0.1:8000/api/v1/health
-```
+## API endpoints
 
-Or open in browser: http://127.0.0.1:8000/api/v1/health
+Base prefix: `/api/v1`
 
-### Data ingestion (download once, work locally)
+- `GET /health`
+- `GET /assets`
+- `GET /assets/{symbol}/prices`
+- `GET /assets/{symbol}/returns`
+- `GET /assets/{symbol}/volatility`
+- `GET /assets/{symbol}/drawdown`
 
-We do not commit large datasets into the repository. Put raw files into `data/raw/` and keep normalized outputs in `data/normalized/`.
-
-#### Normalize a local raw CSV
-
-1. Download a raw OHLCV CSV (example: CryptoDataDownload) and put it into `data/raw/`.
-2. Run ingestion (PowerShell):
-
-```powershell
-uv run python -m app.scripts.ingest --source cryptodatadownload --exchange binance --symbol BTCUSDT --timeframe 1h --raw-file data/raw/BTCUSDT_1h.csv
-```
-
-Output is saved into `data/normalized/` as a normalized CSV with columns:
-
-symbol, timestamp_utc, open, high, low, close, volume, source, timeframe
-
-## Code quality
-
-### Ruff – lint
+Examples:
 
 ```bash
-uv run ruff check .
+curl "http://127.0.0.1:8000/api/v1/assets"
+curl "http://127.0.0.1:8000/api/v1/assets/BTCUSDT/returns?timeframe=1h&type=log&limit=100"
+curl "http://127.0.0.1:8000/api/v1/assets/BTCUSDT/volatility?timeframe=1h&window=24&limit=200"
 ```
 
-### Ruff – format
+## Data
+
+The API reads normalized CSV files from `data/normalized/` by default.
+
+Examples already present in the repository:
+
+- `BTCUSDT_1h.csv`
+- `SPY_1d.csv`
+- `QQQ_1d.csv`
+- `SPX_1d.csv`
+- `EURUSD_1d.csv`
+- `XAUUSD_1d.csv`
+
+You can override the input directory with:
 
 ```bash
-uv run ruff format .
+export NORMALIZED_DATA_DIR=/path/to/normalized
 ```
 
-## Tests
+File naming convention:
 
-Run all tests:
+```text
+<SYMBOL>_<TIMEFRAME>.csv
+```
+
+## Normalize raw data
+
+To convert a raw CryptoDataDownload CSV into the normalized format:
 
 ```bash
-uv run pytest
+uv run python -m app.scripts.ingest \
+  --source cryptodatadownload \
+  --exchange binance \
+  --symbol BTCUSDT \
+  --timeframe 1h \
+  --raw-file data/raw/BTCUSDT_1h.csv
 ```
 
-Run a single test file:
+The normalized file will be written to `data/normalized/`.
 
-```bash
-uv run pytest tests/test_returns.py
-```
-
-## Git hooks (pre-commit + pre-push)
-
-This repository uses pre-commit with:
-
-- ruff (auto-fix)
-- ruff-format
-
-### Install hooks (one-time per machine)
-
-```bash
-uv run pre-commit install
-uv run pre-commit install --hook-type pre-push
-```
-
-### Run hooks manually
-
-```bash
-uv run pre-commit run --all-files
-```
-
-If hooks do not trigger automatically:
-
-- make sure they are installed
-- restart terminal (especially on Windows)
-- confirm you are inside this repo
-
-## Development workflow (must follow)
-
-### Update local master
-
-```bash
-git checkout master
-git pull
-```
-
-### Create feature branch
-
-```bash
-git checkout -b feature/<short-name>
-```
-
-### Implement feature
-
-Rules:
-
-- domain logic → app/domain
-- API wiring → app/api
-- integrations → app/services
-- tests → tests
-
-### Run checks locally
+## Quality checks
 
 ```bash
 uv run ruff check .
 uv run ruff format .
 uv run pytest
-uv run pre-commit run --all-files
 ```
 
-### Commit and push
+To run a specific API test:
 
 ```bash
-git add .
-git commit -m "<type>: <message>"
-git push -u origin feature/<short-name>
+uv run pytest tests/test_returns_api.py
 ```
 
-### Open Pull Request
+## Notes
 
-Every PR must:
-
-- be small and focused
-- include tests (when applicable)
-- update README or docs if behavior changes
-
-## Common issues
-
-### uv not found
-
-macOS:
-
-```bash
-brew install uv
-```
-
-Windows:
-
-```bash
-python -m pip install -U uv
-python -m uv --version
-```
-
-### No module named pip
-
-Your venv is missing pip:
-
-```bash
-python -m ensurepip --upgrade
-python -m pip --version
-```
-
-### Hooks not running
-
-```bash
-uv run pre-commit install
-uv run pre-commit install --hook-type pre-push
-```
-
-Restart terminal afterwards.
-
-## Project philosophy
-
-QuantLab is built as an applied quantitative project:
-
-- correctness over speed
-- explicit math over magic ML
-- small PRs
-- reproducible calculations
-- clear separation of concerns
-
-This is a learning + portfolio project with production-style discipline.
-
-## License
-
-TBD
+- `GET /assets` builds its response from the CSV files available in the normalized data directory.
+- Analytics endpoints return `404` if the requested `{symbol}_{timeframe}.csv` file does not exist.
+- The project currently uses file-based market data, not a database.

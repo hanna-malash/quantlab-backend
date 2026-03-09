@@ -25,7 +25,8 @@ def test_drawdown_endpoint_reads_normalized_csv(tmp_path: Path) -> None:
     assert resp.status_code == 200
 
     data = resp.json()
-    assert len(data) == 3
-    assert data[0]["value"] == 0.0
-    assert data[1]["value"] == 0.0
-    assert abs(data[2]["value"] - (-0.25)) < 1e-12
+    assert data["symbol"] == "SPY"
+    assert len(data["points"]) == 3
+    assert data["points"][0]["value"] == 0.0
+    assert data["points"][1]["value"] == 0.0
+    assert abs(data["points"][2]["value"] - (-0.25)) < 1e-12
