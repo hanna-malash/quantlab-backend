@@ -22,9 +22,7 @@ def test_assets_overview_endpoint_returns_summary_metrics(tmp_path: Path) -> Non
         else:
             close += 1.0
         ts = start + timedelta(days=day)
-        rows.append(
-            f"SPY,{ts.isoformat()},{close},{close},{close},{close},0,stooq,1d\n"
-        )
+        rows.append(f"SPY,{ts.isoformat()},{close},{close},{close},{close},0,stooq,1d\n")
 
     (normalized_dir / "SPY_1d.csv").write_text("".join(rows), encoding="utf-8")
     os.environ["NORMALIZED_DATA_DIR"] = str(normalized_dir)
