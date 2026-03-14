@@ -15,7 +15,7 @@ def align_series(
 ) -> dict[str, list[float]]:
     values_by_timestamp: dict[datetime, dict[str, float]] = defaultdict(dict)
     for symbol, points in series_by_symbol.items():
-      for timestamp_utc, value in points:
+        for timestamp_utc, value in points:
             values_by_timestamp[timestamp_utc][symbol] = value
 
     aligned_timestamps = sorted(
