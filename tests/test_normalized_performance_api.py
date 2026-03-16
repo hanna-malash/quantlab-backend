@@ -52,13 +52,11 @@ def test_normalized_performance_endpoint_requires_overlapping_points(tmp_path: P
 
     header = "symbol,timestamp_utc,open,high,low,close,volume,source,timeframe\n"
     (normalized_dir / "SPY_1d.csv").write_text(
-        header
-        + "SPY,2024-01-01T00:00:00+00:00,100,100,100,100,0,stooq,1d\n",
+        header + "SPY,2024-01-01T00:00:00+00:00,100,100,100,100,0,stooq,1d\n",
         encoding="utf-8",
     )
     (normalized_dir / "QQQ_1d.csv").write_text(
-        header
-        + "QQQ,2024-02-01T00:00:00+00:00,200,200,200,200,0,stooq,1d\n",
+        header + "QQQ,2024-02-01T00:00:00+00:00,200,200,200,200,0,stooq,1d\n",
         encoding="utf-8",
     )
 
