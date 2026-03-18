@@ -43,9 +43,7 @@ def get_risk_summary(
         ) from None
 
     close_points = [(point.timestamp_utc, point.close) for point in points]
-    returns_points = (
-        simple_returns(close_points) if type == "simple" else log_returns(close_points)
-    )
+    returns_points = simple_returns(close_points) if type == "simple" else log_returns(close_points)
     returns_values = [point.value for point in returns_points]
 
     drawdowns = drawdown_series(close_points)
